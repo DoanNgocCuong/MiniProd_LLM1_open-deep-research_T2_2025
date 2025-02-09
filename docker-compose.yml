@@ -1,0 +1,46 @@
+version: '3.8'
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.0.0/16
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - UPSTASH_REDIS_URL=${UPSTASH_REDIS_URL}
+        - UPSTASH_REDIS_TOKEN=${UPSTASH_REDIS_TOKEN}
+    ports:
+      - "25043:25043"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=25043
+      - HOST=0.0.0.0
+      - DATABASE_URL=postgresql://doanngoccuong:doanngoccuong@db:5432/open_deep_research_doancuong
+    networks:
+      - app_net
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: doanngoccuong
+      POSTGRES_PASSWORD: doanngoccuong
+      POSTGRES_DB: open_deep_research_doancuong
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_net
+
+volumes:
+  postgres_data:
